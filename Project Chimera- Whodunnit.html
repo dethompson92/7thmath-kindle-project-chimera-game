@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7th Grade Math Clue Hunt - Project Chimera</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        MathJax = {
+          tex: {
+            inlineMath: [['$', '$'], ['\\(', '\\)']],
+            displayMath: [['$$', '$$'], ['\\[', '\\]']],
+            processEscapes: true
+          },
+          svg: {
+            fontCache: 'global'
+          }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Darker background - slate 900 */
+            color: #e2e8f0; /* Lighter text for contrast - slate 200 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start; /* Align to top for scrolling */
+            min-height: 100vh;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+        .app-container {
+            width: 100%;
+            max-width: 750px; /* Slightly wider */
+            margin: 0 auto;
+        }
+        .container {
+            background-color: #1e293b; /* Slate 800 for container */
+            padding: 1.5rem 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            text-align: center;
+            margin-bottom: 1rem; 
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #334155; /* Slate 700 */
+        }
+        .page-header h1 {
+            font-size: 1.8rem; 
+            font-weight: 700;
+            color: #60a5fa; /* Blue 400 for title */
+            cursor: pointer; /* Make title look clickable */
+            transition: color 0.2s ease;
+        }
+        .page-header h1:hover {
+            color: #93c5fd; /* Lighter blue on hover */
+        }
+        .nav-button {
+            background-color: #3b82f6; 
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .nav-button:hover {
+            background-color: #2563eb; 
+        }
+        .nav-button:disabled {
+            background-color: #475569; 
+            cursor: not-allowed;
+        }
+
+        #home-page-container .title-header h2, 
+        #introduction-page-container .title-header h2 { /* Style for intro page title */
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #93c5fd; 
+            margin-bottom: 1rem;
+        }
+        #clue-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+        #clue-list button, #introduction-options-list button, #introduction-page-container .back-button { /* Style for intro options and back button */
+            background-color: #374151; 
+            color: #e5e7eb; 
+            padding: 0.75rem;
+            border: 1px solid #4b5563; 
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            font-size: 0.9rem;
+            text-align: left; /* Align text for intro options */
+            width: 100%; /* Make buttons full width */
+            margin-bottom: 0.5rem; /* Space between intro options */
+        }
+        #clue-list button:hover, #introduction-options-list button:hover, #introduction-page-container .back-button:hover {
+            background-color: #4b5563; 
+        }
+        #introduction-options-list a { /* Style for the links within buttons */
+            color: #e5e7eb;
+            text-decoration: none;
+            display: block; /* Make link fill button */
+        }
+
+
+        .question-container h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #93c5fd; 
+            min-height: 60px; 
+            text-align: center; 
+            line-height: 1.6; 
+            padding: 0 0.5rem; 
+        }
+        .question-container h2 mjx-container { /* For MathJax alignment */
+            display: inline-block; 
+            vertical-align: -0.2ex; 
+        }
+        .question-container h2 .question-table { /* Style for the HTML table in question */
+            margin: 0.75em auto; /* Center table */
+            border-collapse: collapse;
+            width: auto; /* Auto width based on content */
+            min-width: 50%; /* Give it some minimum width */
+            max-width: 80%; /* Prevent it from being too wide */
+            text-align: center; /* Center text in cells */
+            background-color: #273142; /* Slightly different bg for table */
+            border-radius: 0.25rem;
+            border: 1px solid #334155;
+        }
+        .question-container h2 .question-table th,
+        .question-container h2 .question-table td {
+            border: 1px solid #334155; /* Slate 700 for borders */
+            padding: 0.5em 0.75em;
+            color: #cbd5e1; /* Slate 300 for table text */
+        }
+        .question-container h2 .question-table th {
+            background-color: #334155; /* Darker for header */
+            font-weight: 600;
+        }
+
+
+        .answer-options button, .answer-options .checkbox-label {
+            display: block; width: 100%;
+            background-color: #3b82f6; color: white;
+            padding: 0.75rem 1rem; margin-bottom: 0.75rem;
+            border: 1px solid #2563eb; border-radius: 0.5rem;
+            cursor: pointer; transition: background-color 0.3s ease, transform 0.1s ease;
+            font-size: 0.95rem; font-weight: 500; text-align: left;
+        }
+        .answer-options button:hover { background-color: #2563eb; }
+        .answer-options button:active { transform: scale(0.98); }
+        .answer-options button.disabled, .answer-options .checkbox-label.disabled {
+            background-color: #475569; border-color: #334155;
+            color: #94a3b8; cursor: not-allowed;
+        }
+        .answer-options .checkbox-label {
+            display: flex; align-items: center;
+            background-color: #374151; border: 1px solid #4b5563;
+        }
+        .answer-options .checkbox-label:hover { background-color: #4b5563; }
+        .answer-options input[type="checkbox"] {
+            margin-right: 0.75rem; height: 1.25rem; width: 1.25rem;
+            accent-color: #60a5fa;
+        }
+        .answer-options input[type="checkbox"]:disabled { accent-color: #9ca3af; }
+
+        #submit-multiselect-btn {
+            background-color: #16a34a; color: white;
+            padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem;
+            cursor: pointer; transition: background-color 0.3s ease;
+            font-size: 1rem; font-weight: 600; margin-top: 0.5rem;
+        }
+        #submit-multiselect-btn:hover { background-color: #15803d; }
+        #submit-multiselect-btn:disabled { background-color: #475569; cursor: not-allowed; }
+
+        .clue-container {
+            margin-top: 1.5rem; padding: 1.25rem;
+            background-color: #334155; border-radius: 0.5rem;
+            border: 1px solid #475569; min-height: 70px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            color: #cbd5e1;
+        }
+        .clue-container p { font-size: 1rem; font-style: italic; margin-bottom: 0.5rem; }
+        .clue-container p:last-child { margin-bottom: 0; }
+
+        .navigation-footer { 
+            display: flex;
+            justify-content: space-between; 
+            align-items: center;
+            margin-top: 1.5rem;
+        }
+        .navigation-footer button { 
+             color: white;
+            padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem;
+            cursor: pointer; transition: background-color 0.3s ease;
+            font-size: 1rem; font-weight: 600;
+        }
+        #next-question-btn { background-color: #0ea5e9; }
+        #next-question-btn:hover { background-color: #0284c7; }
+        #undo-btn { background-color: #ef4444; }
+        #undo-btn:hover { background-color: #dc2626; }
+        .navigation-footer button:disabled { background-color: #475569; cursor: not-allowed; }
+
+        .progress-bar-container {
+            width: 100%; background-color: #334155;
+            border-radius: 0.25rem; margin-bottom: 1.5rem;
+            overflow: hidden; height: 12px;
+        }
+        .progress-bar {
+            height: 100%; width: 0%;
+            background-color: #60a5fa;
+            transition: width 0.5s ease-in-out;
+        }
+        .final-message h3 { font-size: 1.75rem; color: #34d399; margin-bottom: 1rem; }
+        .final-message p { font-size: 1.1rem; color: #a3e635; }
+        .final-message button { 
+            background-color: #10b981; color: white;
+            padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem;
+            cursor: pointer; transition: background-color 0.3s ease;
+            font-size: 1rem; font-weight: 600; margin-top: 1.5rem;
+        }
+        .final-message button:hover{ background-color: #059669;}
+        .hidden { display: none !important; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="page-header">
+            <h1 id="main-title">Project Chimera &lt;–––– Click to hear Intro</h1>
+            <button id="home-btn" class="nav-button hidden">Clue List</button>
+        </div>
+
+        <div id="introduction-page-container" class="container hidden">
+            <div class="title-header">
+                <h2>Mission Introduction Options</h2>
+                <p class="text-sm text-slate-400 mb-4">Click to play an audio introduction (opens in Google Drive).</p>
+            </div>
+            <div id="introduction-options-list">
+                <button>
+                    <a href="https://docs.google.com/presentation/d/e/2PACX-1vSpbS69Iqm_zvEELbAFlFYojtVFvELSsnBszjiwNlE0Bi61R2c4UxTs6jVVFCtGay3dzyNn5tryRFOE/pub?start=true&loop=false&delayms=60000" target="_blank">
+                        <strong>Introduction - Gwen</strong>
+                    </a>
+                </button>
+                <button>
+                     <a href="https://docs.google.com/presentation/d/e/2PACX-1vRvCg8xeYfiRXJ9SP4BlayuWAXO-BMaty04oiw4UvpezGgUOy7L37mDGDXliRNxlpo_h_Oqpl5fWDXH/pub?start=true&loop=false&delayms=60000" target="_blank">
+                        <strong>Introduction - Mr. Beast</strong>
+                    </a>
+                </button>
+                <button>
+                     <a href="https://docs.google.com/presentation/d/e/2PACX-1vRJxIBQ7NZ7NWDEFfzZbHvpY-hHLhBQl8saVggn0do6Jxu6Hj-5qH1U9KNjj0dOqZVfBGrWFvVDX9Xb/pub?start=true&loop=false&delayms=60000" target="_blank">
+                        <strong>Introduction - Obama</strong>
+                    </a>
+                </button>
+                <button>
+                     <a href="https://docs.google.com/presentation/d/e/2PACX-1vSCRY0vbz5fcX50l2Hv7A-19VrEOJB3uOUTwYAZQHOH0KqfraFpg3ZYYlE9oFzOamInrZPWjtEmxHV2/pub?start=true&loop=false&delayms=60000" target="_blank">
+                        <strong>Introduction - Tasha</strong>
+                    </a>
+                </button>
+                <button>
+                     <a href="https://docs.google.com/presentation/d/e/2PACX-1vR2s9kfaTF6N_WFX0BxtAk_uEIs0pglICKidq2-MT3uYJt-4i0-xIdJjKTq_Ec_RH6IUg14vZ2y_ZFN/pub?start=true&loop=false&delayms=60000" target="_blank">
+                        <strong>Introduction - Henry</strong>
+                    </a>
+                </button>
+            </div>
+            <button id="back-to-clue-list-btn" class="nav-button back-button mt-6">Back to Clue List</button>
+        </div>
+
+
+        <div id="home-page-container" class="container">
+            <div class="title-header">
+                <h2>Mission Briefing: Clue Index</h2>
+            </div>
+            <div id="clue-list">
+                </div>
+        </div>
+
+        <div id="game-content-container" class="hidden"> 
+            <div id="progress-bar-container" class="progress-bar-container">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+            <div class="container"> 
+                <div id="question-section">
+                    <div id="question-container" class="question-container">
+                        <h2 id="question-text">Loading question...</h2>
+                    </div>
+                    <div id="answer-options" class="answer-options"></div>
+                    <button id="submit-multiselect-btn" class="hidden">Reveal Clue(s) for Selected</button>
+                </div>
+                <div id="clue-container" class="clue-container">
+                    <p id="clue-text-default">Select an answer to reveal a clue!</p>
+                </div>
+            </div>
+            <div id="navigation-footer" class="navigation-footer">
+                <button id="undo-btn" class="nav-button" disabled>Undo</button>
+                <button id="next-question-btn" disabled>Next Question</button>
+            </div>
+        </div>
+
+        <div id="final-message-container" class="hidden">
+            <div class="container final-message">
+                <h3>CASE CLOSED?</h3>
+                <p>You've gathered all the intel, Agent. Can you decipher the truth behind Project Chimera?</p>
+                <button id="restart-btn">Restart Investigation</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questionsData = [
+            // --- CLUE #1 --- (Single Select)
+            {
+                questionText: "A recipe for a smoothie calls for $\\frac{3}{4}$ cup of strawberries for every $\\frac{1}{2}$ cup of yogurt. How many cups of strawberries are needed per cup of yogurt?",
+                type: "single-select",
+                answers: [
+                    { answerText: "$\\frac{3}{8}$ cup", clue: "Nyx's signature was found on a blueprint for the Forge Room – a key piece of intel!" },
+                    { answerText: "$\\frac{2}{3}$ cup", clue: "Security sweep confirms Mr. H was nowhere near the server room during the breach. He's cleared." },
+                    { answerText: "$1\\frac{1}{4}$ cups", clue: "The Science Lab is compromised! Avoid it at all costs – it’s a dangerous distraction." },
+                    { answerText: "$1\\frac{1}{2}$ cups", clue: "A frantic, encrypted message from Nyx flashes on a compromised screen: 'The primary breach didn't happen in a standard classroom like the 7th Math Room or 7th Humanities Room. Look for unconventional spaces!'" }
+                ]
+            },
+            // --- CLUE #2 --- (Single Select)
+            {
+                questionText: "The temperature at 6:00 AM was $-5.5^{\\circ}F$. By noon, the temperature had risen by $12.3^{\\circ}F$. By 6:00 PM, the temperature had dropped by $8.1^{\\circ}F$ from the noon temperature. What was the temperature at 6:00 PM?",
+                type: "single-select",
+                answers: [
+                    { answerText: "$-1.3^{\\circ}F$", clue: "Security footage from a hidden camera shows Mr. A and Ms. Malizia leading the school's emergency tech response team from the Conference Room all night. They are definitely not involved in the Phantom Copy." },
+                    { answerText: "$6.8^{\\circ}F$", clue: "The Phantom Copy is hidden somewhere very cold. The cafeteria freezer is our prime suspect location!" },
+                    { answerText: "$-15.9^{\\circ}F$", clue: "A coded message says Ms. Jade was seen near the Journal Square PATH station acting suspiciously." },
+                    { answerText: "$14.9^{\\circ}F$", clue: "The culprit is definitely not Mr. DJ; he was helping reboot the main servers." }
+                ]
+            },
+            // --- CLUE #3 --- (Single Select)
+            {
+                questionText: "Question: A plumber charges a flat fee of $50 for a service call, plus $35 per hour of work. If the total charge for a service call was $172.50, how many hours did the plumber work?",
+                type: "single-select",
+                answers: [
+                    { answerText: "2.5 hours", clue: "The critical intel is a set of blueprints for Kindle Education with Nyx's markings." },
+                    { answerText: "3.0 hours", clue: "Mr. Thompson was overheard discussing advanced AI ethics – very suspicious!" },
+                    { answerText: "3.5 hours", clue: "Nyx's digital breadcrumbs lead to a corrupted audio file. The only decipherable words are: '...not a simple theft... more like a twisted lesson... the intel isn't just an anonymous tip or a social media post... it's far more technical...'" },
+                    { answerText: "4.0 hours", clue: "The Old Storage Basement is where Nyx hid the first part of the Decryption Key." }
+                ]
+            },
+            // --- CLUE #4 --- (Single Select)
+            {
+                questionText: "A rectangular prism has a length of 8 cm, a width of 5 cm, and a height of 3 cm. What is the surface area of the prism?",
+                type: "single-select",
+                answers: [
+                    { answerText: "$60 \\text{ cm}^2$", clue: "The Phantom Copy is hidden with a burner phone containing incriminating texts." },
+                    { answerText: "$79 \\text{ cm}^2$", clue: "Our mole says Ms. Morrobel is Nyx! She designed the lockdown sequence." },
+                    { answerText: "$120 \\text{ cm}^2$", clue: "The Main Office server terminal was used to activate the Phantom Copy." },
+                    { answerText: "$158 \\text{ cm}^2$", clue: "A faculty member found a discarded snack wrapper near a blinking server light – the kind only sold in the Teacher Workroom Vending Machine. Nyx's note attached says: 'The architect of this chaos is cunning, not careless. They wouldn't be caught here.'" }
+                ]
+            },
+            // --- CLUE #5 --- (Single Select)
+            {
+                questionText: "A bag contains 5 red marbles, 3 blue marbles, and 2 green marbles. If one marble is drawn at random from the bag, what is the probability that the marble will be blue?",
+                type: "single-select",
+                answers: [
+                    { answerText: "$\\frac{1}{5}$", clue: "The critical intel is definitely a piece of custom hardware; Nyx was known for unique gadgets." },
+                    { answerText: "$\\frac{3}{10}$", clue: "A deep dive into Project Chimera's code logs shows the Phantom Copy sequence was not initiated from the Main Office or Mr. DJ's Office. However, a ghost signal pings near Mr. DJ's last known project access point – almost too perfectly." },
+                    { answerText: "$\\frac{1}{3}$", clue: "The Forge Room has been ruled out; its power signature doesn't match the Phantom Copy's needs." },
+                    { answerText: "$\\frac{3}{7}$", clue: "Mr. Eli is assisting the investigation; he's not a suspect." }
+                ]
+            },
+            // --- CLUE #6 --- (Single Select)
+            {
+                questionText: "Question: The table below shows the relationship between the number of hours a student works and the amount of money they earn." +
+                              "<table class='question-table'>" +
+                              "<thead><tr><th>Hours worked (h)</th><th>Money Earned (m)</th></tr></thead>" +
+                              "<tbody>" +
+                              "<tr><td>2</td><td>$25.00</td></tr>" +
+                              "<tr><td>3</td><td>$37.50</td></tr>" +
+                              "<tr><td>5</td><td>$62.50</td></tr>" +
+                              "<tr><td>6</td><td>$75.00</td></tr>" +
+                              "</tbody></table>" +
+                              "<br>&rarr; Part A: Is the relationship proportional?<br>&rarr; Part B: If yes, write an equation.",
+                type: "single-select",
+                answers: [
+                    { answerText: "Yes, $m = 12.5h$", clue: "Nyx’s ally inside whispers: 'The culprit is male. This significantly narrows our suspect list. And disregard any rumors about Blimpies or the Roof Access Door; those are amateur distractions.'" },
+                    { answerText: "No, cannot be written", clue: "The Server Room is where the Decryption Key is hidden, says a reliable source." },
+                    { answerText: "Yes, $m = 25h$", clue: "Ms. Carlson (Ms. C) has been cleared; she was on a video call with the superintendent." },
+                    { answerText: "Yes, $h = 12.5m$", clue: "The Phantom Copy was found with a USB drive disguised as jewelry." }
+                ]
+            },
+            // --- CLUE #7 --- (Multi-Select)
+            {
+                questionText: "Select all expressions that are equivalent to $2(3x-4) + 5x-2$.",
+                type: "multi-select",
+                options: [
+                    { optionId: "7a", optionText: "$11x - 10$" },
+                    { optionId: "7b", optionText: "$5x + 6x - 8 - 2$" },
+                    { optionId: "7c", optionText: "$11x - 6$" },
+                    { optionId: "7d", optionText: "$x - 10$" }
+                ],
+                combinations: [
+                    { selectedOptionIds: ["7a", "7c"], clue: "The Phantom Copy is hidden at the Mana Contemporary Art Center – the planned summit location for the Project Chimera reveal! They're trying to activate it during the presentation!" },
+                    { selectedOptionIds: ["7a", "7b"], clue: "A recovered data fragment mentions the Phantom Copy requires a stable, isolated power source, unlike anything found in the Breakout Space or easily accessible like the Emergency Exit Stairwell in Wing C." }
+                ],
+                defaultClue: "The Phantom Copy is hidden at the Mana Contemporary Art Center – the planned summit location for the Project Chimera reveal! They're trying to activate it during the presentation!"
+            },
+            // --- CLUE #8 --- (Single Select)
+            {
+                questionText: "A map has a scale of 1 inch = 25 miles. The distance between two cities on the map is 4.5 inches. What is the actual distance between the two cities?",
+                type: "single-select",
+                answers: [
+                    { answerText: "5.56 miles", clue: "The intel is an anonymous tip emailed to the principal; it seems credible." },
+                    { answerText: "29.5 miles", clue: "Mr. DJ left a coded message in the Teacher Workroom; he's trying to help Nyx!" },
+                    { answerText: "100.5 miles", clue: "The steps of the Loew's Jersey Theatre are a dead end; Nyx wouldn't use such a public place." },
+                    { answerText: "112.5 miles", clue: "Sources confirm Ms. Ami, Ms. Thaker, and Ms. Guy were presenting at an off-site workshop all day when the initial breach occurred. They are in the clear." }
+                ]
+            },
+             // --- CLUE #9 --- (Single Select)
+            {
+                questionText: "A submarine is at a depth of –350.75 feet relative to sea level. It then descends an additional 125.5 feet. What is the new depth of the submarine in feet?",
+                type: "single-select",
+                answers: [
+                    { answerText: "–476.25 feet", clue: "The item we're looking for, the critical intel, isn't a bulky piece of old tech like a partially erased hard drive or a burner phone. Nyx implies it’s small, potent, and recently active." },
+                    { answerText: "–225.25 feet", clue: "The payphone near Brennan Courthouse has a message implicating Mr. A." },
+                    { answerText: "–475.25 feet", clue: "The Little Free Library clue was a fake planted by the real culprit." },
+                    { answerText: "476.25 feet", clue: "The Phantom Copy is hidden somewhere high up, like the school roof." } // Changed from –476.25 feet (alt)
+                ]
+            },
+            // --- CLUE #10 --- (Single Select)
+            {
+                questionText: "A school principal wants to determine if students would prefer a new salad bar option in the cafeteria. Which of the following survey methods would produce the most representative sample?",
+                type: "single-select",
+                answers: [
+                    { answerText: "Surveying all the students in the 7th-grade cooking club", clue: "The public art mural contains the code to unlock Nyx's next message." },
+                    { answerText: "Surveying the first 50 students who enter the cafeteria during lunch", clue: "Ms. Jade accidentally left her encrypted laptop in the Library. She's Nyx!" },
+                    { answerText: "Surveying 25 students randomly selected from each grade level", clue: "Nyx’s latest encrypted packet states: 'The Phantom Copy and its architect are not within the Library, nor the Old Storage Basement. Those areas are too... predictable for this level of chess.'" },
+                    { answerText: "Surveying all the students who play on the school's sports teams", clue: "The critical intel is a list of IP addresses; one of them leads directly to the culprit's home." }
+                ]
+            },
+            // --- CLUE #11 --- (Single Select)
+            {
+                questionText: "A store buys a camera for $80. They markup the price by 60% to sell it. Later, the camera goes on sale for 25% off the marked-up price. Finally, a customer uses a coupon for an additional 10% off the sale price. What is the final price the customer pays for the camera, excluding tax?",
+                type: "single-select",
+                answers: [
+                    { answerText: "$72.00", clue: "The Blimpies clue points to Mr. Cristian as the mastermind." },
+                    { answerText: "$81.00", clue: "Ms. Perez was seen near the Forge Room late last night." },
+                    { answerText: "$86.40", clue: "A trusted source reports that Mr. Dennett and Mr. Lord have been working tirelessly to restore the school's secondary systems and have solid alibis. The perpetrator is someone with deeper, more intrinsic knowledge of Project Chimera's core." },
+                    { answerText: "$96.00", clue: "The Phantom Copy is hidden inside Mr. H's Bag." }
+                ]
+            },
+            // --- CLUE #12 --- (Single Select)
+            {
+                questionText: "Question: A diver is at an elevation of $-12\\frac{3}{4}$ feet relative to sea level. The diver descends at a constant rate of $2\\frac{1}{2}$ feet per minute for 5 minutes. After the descent, the diver then ascends $7\\frac{1}{4}$ feet. What is the diver's final elevation relative to sea level?",
+                type: "single-select",
+                answers: [
+                    { answerText: "–18 feet", clue: "The digital signature of the Phantom Copy is too sophisticated for a simple sequence of flashing lights or a mere torn piece of a schematic. Nyx hints the actual intel is more direct and revealing." },
+                    { answerText: "–2.5 feet", clue: "Nyx’s message confirms the culprit is one of the Humanities teachers." },
+                    { answerText: "–20.5 feet", clue: "The critical intel is a burner phone with the culprit's escape plans." },
+                    { answerText: "–32.5 feet", clue: "The Server Room is a red herring; the Phantom Copy isn't there." }
+                ]
+            },
+            // --- CLUE #13 --- (Single Select)
+            {
+                questionText: "Question: A phone plan costs $20 per month plus $0.05 per text message sent. Another plan costs $10 per month plus $0.10 per text message sent. Write and solve an inequality to find the number of text messages for which the first plan is less expensive than the second plan. Explain what your solution means.",
+                type: "single-select",
+                answers: [
+                    { answerText: "$t > 200$ texts", clue: "Nyx’s trace program shows no activity linked to the Phantom Copy near any external city landmarks like the Loew's Jersey Theatre steps, the Jackie Robinson Statue, or the Brennan Courthouse area. The focus must be closer to the source or a very specific, less obvious external node." },
+                    { answerText: "$t < 200$ texts", clue: "The Phantom Copy is definitely at Bubbakoos; a secret meeting was scheduled there." },
+                    { answerText: "$t > 100$ texts", clue: "Mr. Ramsay has been acting strangely; he fits Nyx's profile." },
+                    { answerText: "$t < 100$ texts", clue: "The Rare Books Section of the Library contains a vital clue hidden by Nyx." }
+                ]
+            },
+            // --- CLUE #14 --- (Single Select)
+            {
+                questionText: "The blueprint for a rectangular garden has a scale of 0.5 inches : 3 feet. On the blueprint, the length of the garden is 4.5 inches and the width is 2 inches. Part A: What is the actual area of the garden in square feet? Part B: If fencing costs $5.75 per foot, how much will it cost to enclose the garden completely?",
+                type: "single-select",
+                answers: [
+                    { answerText: "Area: 324 sq ft, Cost: $414", clue: "The lead investigator confirmed that Mr. Cristian, Mr. Ramsay, and Mr. Allen were all chaperoning the school robotics team at an all-day regional qualifier in another county. There's no way they could be 'Nyx' or the thief." },
+                    { answerText: "Area: 162 sq ft, Cost: $207", clue: "A corrupted audio file from Nyx points to Ms. Morrobel as the culprit." },
+                    { answerText: "Area: 324 sq ft, Cost: $207", clue: "The Conference Room was used by Nyx to plant false evidence against an innocent teacher." },
+                    { answerText: "Area: 162 sq ft, Cost: $414", clue: "The Phantom Copy is hidden inside the Jackie Robinson Statue." }
+                ]
+            },
+            // --- CLUE #15 --- (Single Select)
+            {
+                questionText: "A game involves spinning a spinner with three equal sections labeled Red, Blue, and Green, and then rolling a standard six-sided number cube. Part A: Show all possible outcomes. Part B: What is the probability of spinning Blue and rolling a number greater than 4?",
+                type: "single-select",
+                answers: [
+                    { answerText: "$\\frac{1}{18}$", clue: "The intel is security footage showing Mr. DJ accessing the server room after hours." },
+                    { answerText: "$\\frac{1}{9}$", clue: "A coded message found hidden in a public art mural near the school (but not the one Nyx uses!) seems to be a deliberate misdirection. It tries to implicate Ms. Perez and Ms. Ramzi, but the encryption is too clumsy for Nyx... or the true culprit." },
+                    { answerText: "$\\frac{1}{6}$", clue: "Nyx's message states the Phantom Copy is located in Ms. Jade's classroom." },
+                    { answerText: "$\\frac{1}{3}$", clue: "Mr. Lord has an encrypted drive matching Nyx's known coding style." }
+                ]
+            },
+            // --- CLUE #16 --- (Multi-Select)
+            {
+                questionText: "Two cars are traveling at constant speeds. Car A travels 180 miles in 3 hours. The relationship between the distance (y, in miles) and time (x, in hours) for Car B is given by the equation $y = 55x$. Which statements are true? Select all that apply.",
+                type: "multi-select",
+                options: [
+                    { optionId: "16a", optionText: "Car A is traveling faster than Car B." },
+                    { optionId: "16b", optionText: "Car B is traveling faster than Car A." },
+                    { optionId: "16c", optionText: "The point (1, 60) on a graph would represent Car A's speed." },
+                    { optionId: "16d", optionText: "If both cars travel for 4 hours, Car A will travel 20 more miles than Car B." },
+                    { optionId: "16e", optionText: "The constant of proportionality for Car B is 55 miles per hour." }
+                ],
+                combinations: [
+                    { selectedOptionIds: ["16a", "16c", "16d", "16e"], clue: "Nyx confirms the critical intel isn't a geocache container or an anonymous tip to the principal. 'The truth is embedded in the system itself, or its direct components,' one fragment reads. Also, the Kindle Education: Science Lab has been thoroughly swept and is clear." },
+                    { selectedOptionIds: ["16a", "16c", "16e"], clue: "Nyx's system trace shows a data spike from the Kindle Education: Library. It could be where the Phantom Copy was researched or where Nyx left a background file, but it's not where the active Phantom Copy is hidden." },
+                    { selectedOptionIds: ["16a", "16b", "16c", "16d", "16e"], clue: "ALERT! Unauthorized admin access detected from Ms. Jade's Classroom Terminal! It looks like a direct attempt to modify Project Chimera's core parameters and frame her!" },
+                    { selectedOptionIds: ["16b"], clue: "The culprit used a complex logic puzzle to encrypt the Phantom Copy's location, hidden within a series of anonymous blog posts. We need a cryptographer, not just a tech!" },
+                    { selectedOptionIds: ["16a", "16d", "16b"], clue: "An anonymous tip claims the Phantom Copy is hidden in the Old Storage Basement, rigged with a primitive alarm. This seems far too obvious for Nyx, or our actual culprit. It's likely a dead end." }
+                ],
+                defaultClue: "A garbled transmission mentions a 'failed experiment' in the Kindle Education: Science Lab that caused a significant system overload. This diversion likely helped the culprit during the initial breach. The Lab is now off-limits and confirmed clear of the Phantom Copy."
+            },
+            // --- CLUE #17 --- (Multi-Select)
+            {
+                questionText: "An item originally priced at 'p' dollars is on sale for 20% off. Which expressions represent the sale price of the item? Select all that apply.",
+                type: "multi-select",
+                options: [
+                    { optionId: "17a", optionText: "$p - 0.20p$" },
+                    { optionId: "17b", optionText: "$0.8p$" },
+                    { optionId: "17c", optionText: "$1.2p$" },
+                    { optionId: "17d", optionText: "$(1 - 0.20)p$" },
+                    { optionId: "17e", optionText: "$p - 20$" }
+                ],
+                combinations: [
+                    { selectedOptionIds: ["17a", "17b", "17d"], clue: "The digital trail is getting hotter. The Phantom Copy isn't at Bubbakoos or the Little Free Library. Nyx's latest ping was weak, as if from a shielded room... and it briefly mentioned Ms. Jade with a warning about 'false flags'." },
+                    { selectedOptionIds: ["17a", "17b"], clue: "A faint signal was traced to the Journal Square PATH station, near an old ticket machine. Nyx might have used it as a drop point for a message, but the Phantom Copy isn't there now, and the message was corrupted." },
+                    { selectedOptionIds: ["17c"], clue: "Intel suggests the culprit, Mr. Thompson, tried to increase Project Chimera's processing power for an unauthorized side project, not just steal the existing code. He was seen near the server cooling units with custom hardware not approved by Kindle." },
+                    { selectedOptionIds: ["17a", "17b", "17c", "17d"], clue: "Intel suggests the culprit, Mr. Thompson, tried to increase Project Chimera's processing power for an unauthorized side project, not just steal the existing code. He was seen near the server cooling units with custom hardware not approved by Kindle." }, // For just C or B and C, or A,B,C,D
+                    { selectedOptionIds: ["17b", "17c"], clue: "Intel suggests the culprit, Mr. Thompson, tried to increase Project Chimera's processing power for an unauthorized side project, not just steal the existing code. He was seen near the server cooling units with custom hardware not approved by Kindle." },
+                    { selectedOptionIds: ["17e"], clue: "The intel is definitely physical – a partially erased hard drive was found stashed behind a loose panel near Mr. DJ's office. He claims it's an old, discarded project, but the erasure pattern is recent and very suspicious." },
+                     { selectedOptionIds: ["17a", "17b", "17e", "17d"], clue: "The intel is definitely physical – a partially erased hard drive was found stashed behind a loose panel near Mr. DJ's office. He claims it's an old, discarded project, but the erasure pattern is recent and very suspicious." }, // For just E or A and E, or A,B,E,D
+                    { selectedOptionIds: ["17a", "17e"], clue: "The intel is definitely physical – a partially erased hard drive was found stashed behind a loose panel near Mr. DJ's office. He claims it's an old, discarded project, but the erasure pattern is recent and very suspicious." }
+                ],
+                defaultClue: "A frantic witness report just came in! Someone matching Ms. Jade's description was seen leaving Bubbakoos in a hurry, carrying a distinct, shielded data container. This strongly implicates her in the physical theft of the device."
+            },
+            // --- CLUE #18 --- (Single Select)
+            {
+                questionText: "The sum of the angles in any triangle is $180^{\\circ}$. In a particular triangle, Angle X measures $a^{\\circ}$. Angle Y measures $(a+30)^{\\circ}$, and Angle Z measures $(2a-10)^{\\circ}$. What is the measure of the largest angle in this triangle?",
+                type: "single-select",
+                answers: [
+                    { answerText: "$40^{\\circ}$", clue: "The Elevator security camera was disabled during the breach – a key clue!" },
+                    { answerText: "$50^{\\circ}$", clue: "Ms. Laura Anne discovered a hidden message from Nyx in the server room." },
+                    { answerText: "$70^{\\circ}$", clue: "Mrs. O'Neill, Ms. Sapna, Ms. Carlson, and Ms. Laura Anne were caught on camera reviewing security protocols in the server room after the initial lockdown. They are assisting, not culprits. And the Elevator's logs show no unusual activity." },
+                    { answerText: "$80^{\\circ}$", clue: "The culprit is not Mrs. O'Neill; she was teaching an online class." }
+                ]
+            },
+            // --- CLUE #19 --- (Single Select)
+            {
+                questionText: "A company's stock price started at $52.80. Mon: -$1.15. Tue: +$0.90. Wed: -$2.45. Thu: +$1.75. On Fri, its value became $1\\frac{1}{4}$ times its value from end of Mon. What was the change in stock price on Friday?",
+                type: "single-select",
+                answers: [
+                    { answerText: "$12.71", clue: "A message intercepted from a dark web forum, believed to be used by Mr. H's associates (or himself under an alias), mentions a 'final convergence point' not at the Journal Square PATH Station control booth or the Mana Contemporary Art Center. They are too public for the final assembly of the Phantom Copy. The intel is not a USB drive disguised as jewelry, nor is it a distorted audio recording. Nyx confirms the core schematic is digital, on a specific type of storage." },
+                    { answerText: "$14.15", clue: "The Journal Square PATH station is where Nyx will leave the Decryption Key." },
+                    { answerText: "$1.25", clue: "The critical intel is a USB drive disguised as jewelry found at the Mana Contemporary Art Center." },
+                    { answerText: "$13.01", clue: "Mr. H was seen near the Mana Contemporary Art Center, likely planning his escape." }
+                ]
+            },
+            // --- CLUE #20 --- (Single Select)
+            {
+                questionText: "Dot plots for books read: Class A (2,3,3,4,4,4,5,5,6,7,7,8), Class B (4,5,5,6,6,6,6,7,7,8,8,9). Part A: Mean & Median for each? Part B: Which class read more? Justify.",
+                type: "single-select",
+                answers: [
+                    { answerText: "Class B generally read more books. This is supported by their higher mean (approx. 6.42 books) compared to Class A's mean (approx. 4.83 books), and their higher median (6 books) compared to Class A's median (4.5 books).", clue: "Nyx's final, desperate message, barely intelligible: 'The one you seek... often spoke of...ethical firewalls... He felt Project Chimera was a runaway train. He never intended true harm, only control... He called his private workshop his 'sanctuary'... It's not Ms. Morrison or Mr. Thompson. The final intel you need... it's not a complex logic puzzle... it’s a data chip... with the key... He tried to make Ms. Jade the fall guy... Check his known 'sanctuary' for the device.'" },
+                    { answerText: "Class A generally read more books. Although their median is lower, their range (6 books) is wider than Class B's range (5 books), suggesting some students in Class A read significantly more, pulling up the overall average if outliers were considered differently.", clue: "The complex logic puzzle left by Nyx, once deciphered, reveals a hidden compartment in Ms. Morrison's office. She must be the mastermind who designed the Phantom Copy." },
+                    { answerText: "Both classes read about the same number of books. While Class B's median (6) is higher than Class A's (4.5), the distributions show considerable overlap, and the difference in means (approx. 1.6 books) is not significant enough to declare one class definitively read more.", clue: "Mr. Thompson has the crucial data chip! He was Nyx's secret partner, planning to expose Project Chimera's flaws from his office in the Humanities Department." },
+                    { answerText: "It cannot be definitively determined which class read more using only mean and median. Class A has a lower minimum value (2 books) which affects its mean, while Class B has a higher maximum (9 books); a more detailed analysis of the data distribution's shape or other statistical measures like mode or standard deviation is needed.", clue: "Ms. Jade is the true villain! She hid the Phantom Copy in her 'sanctuary' – the Art Room supply closet! The intel isn't a chip, it's a USB drive disguised as an art tool." }
+                ]
+            }
+        ];
+
+        // DOM Elements
+        const mainTitleElement = document.getElementById('main-title');
+        const introductionPageContainer = document.getElementById('introduction-page-container');
+        const introductionOptionsList = document.getElementById('introduction-options-list'); 
+        const backToClueListBtn = document.getElementById('back-to-clue-list-btn');
+
+        const homePageContainer = document.getElementById('home-page-container');
+        const gameContentContainer = document.getElementById('game-content-container');
+        const finalMessageContainer = document.getElementById('final-message-container');
+        const clueListElement = document.getElementById('clue-list');
+        const homeBtn = document.getElementById('home-btn');
+        
+        const questionTextElement = document.getElementById('question-text');
+        const answerOptionsElement = document.getElementById('answer-options');
+        const clueContainer = document.getElementById('clue-container'); 
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const submitMultiSelectBtn = document.getElementById('submit-multiselect-btn');
+        const undoBtn = document.getElementById('undo-btn');
+        
+        const restartBtn = document.getElementById('restart-btn');
+        const progressBar = document.getElementById('progress-bar');
+
+        let currentQuestionIndex = 0;
+        let questionAnsweredState = false; 
+
+        function showPage(pageToShow) {
+            introductionPageContainer.classList.add('hidden');
+            homePageContainer.classList.add('hidden');
+            gameContentContainer.classList.add('hidden');
+            finalMessageContainer.classList.add('hidden');
+            homeBtn.classList.add('hidden'); 
+
+            if (pageToShow === 'introduction') {
+                introductionPageContainer.classList.remove('hidden');
+                homeBtn.classList.remove('hidden'); 
+            } else if (pageToShow === 'home') {
+                homePageContainer.classList.remove('hidden');
+            } else if (pageToShow === 'game') {
+                gameContentContainer.classList.remove('hidden');
+                homeBtn.classList.remove('hidden'); 
+            } else if (pageToShow === 'final') {
+                finalMessageContainer.classList.remove('hidden');
+                homeBtn.classList.remove('hidden'); 
+            }
+        }
+
+        mainTitleElement.addEventListener('click', () => {
+            showPage('introduction');
+        });
+
+        backToClueListBtn.addEventListener('click', () => {
+            showPage('home');
+        });
+
+        function initializeHomePage() {
+            clueListElement.innerHTML = ''; 
+            for (let i = 0; i < questionsData.length; i++) {
+                const clueButton = document.createElement('button');
+                clueButton.textContent = `Clue #${i + 1}`;
+                clueButton.addEventListener('click', () => {
+                    currentQuestionIndex = i;
+                    questionAnsweredState = false; 
+                    loadQuestion();
+                    showPage('game');
+                });
+                clueListElement.appendChild(clueButton);
+            }
+        }
+        
+        homeBtn.addEventListener('click', () => {
+            showPage('home');
+        });
+
+        function arraysEqual(arr1, arr2) {
+            if (arr1.length !== arr2.length) return false;
+            const sortedArr1 = [...arr1].sort();
+            const sortedArr2 = [...arr2].sort();
+            for (let i = 0; i < sortedArr1.length; i++) {
+                if (sortedArr1[i] !== sortedArr2[i]) return false;
+            }
+            return true;
+        }
+
+        function loadQuestion() {
+            questionAnsweredState = false;
+            undoBtn.disabled = true; 
+            answerOptionsElement.innerHTML = '';
+            clueContainer.innerHTML = '<p id="clue-text-default">Select an answer to reveal a clue!</p>';
+            
+            nextQuestionBtn.disabled = true;
+            submitMultiSelectBtn.classList.add('hidden');
+            submitMultiSelectBtn.disabled = true;
+
+            if (currentQuestionIndex < questionsData.length) {
+                const currentQuestion = questionsData[currentQuestionIndex];
+                questionTextElement.innerHTML = currentQuestion.questionText;
+
+                if (currentQuestion.type === "single-select") {
+                    currentQuestion.answers.forEach(answer => {
+                        const button = document.createElement('button');
+                        button.innerHTML = answer.answerText;
+                        button.addEventListener('click', () => selectSingleAnswer(answer.clue, currentQuestion.answers));
+                        answerOptionsElement.appendChild(button);
+                    });
+                } else if (currentQuestion.type === "multi-select") {
+                    currentQuestion.options.forEach(option => {
+                        const label = document.createElement('label');
+                        label.classList.add('checkbox-label');
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.value = option.optionId; 
+                        checkbox.id = `option-${option.optionId}`;
+                        
+                        const span = document.createElement('span');
+                        span.innerHTML = option.optionText;
+                        
+                        label.appendChild(checkbox);
+                        label.appendChild(span);
+                        answerOptionsElement.appendChild(label);
+                    });
+                    submitMultiSelectBtn.classList.remove('hidden');
+                    answerOptionsElement.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                        cb.addEventListener('change', () => {
+                            const anyChecked = Array.from(answerOptionsElement.querySelectorAll('input[type="checkbox"]')).some(c => c.checked);
+                            submitMultiSelectBtn.disabled = !anyChecked;
+                        });
+                    });
+                }
+                
+                if (window.MathJax && window.MathJax.typesetPromise) {
+                    window.MathJax.typesetPromise([questionTextElement, answerOptionsElement]).catch(err => console.error('MathJax typesetting error:', err));
+                }
+
+                const progressPercentage = ((currentQuestionIndex) / questionsData.length) * 100;
+                progressBar.style.width = progressPercentage + '%';
+            } else {
+                showPage('final');
+                progressBar.style.width = '100%';
+            }
+        }
+        
+        function selectSingleAnswer(clue) {
+            clueContainer.innerHTML = `<p>${clue}</p>`;
+            
+            const buttons = answerOptionsElement.querySelectorAll('button');
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('disabled');
+            });
+            nextQuestionBtn.disabled = false;
+            questionAnsweredState = true;
+            undoBtn.disabled = false;
+        }
+
+        submitMultiSelectBtn.addEventListener('click', () => {
+            const currentQuestion = questionsData[currentQuestionIndex];
+            const checkedCheckboxes = Array.from(answerOptionsElement.querySelectorAll('input[type="checkbox"]:checked'));
+            const selectedOptionIds = checkedCheckboxes.map(cb => cb.value);
+            
+            let clueToShow = currentQuestion.defaultClue;
+            if (currentQuestion.combinations && currentQuestion.combinations.length > 0) {
+                for (const combination of currentQuestion.combinations) {
+                    const sortedSelectedIds = [...selectedOptionIds].sort();
+                    const sortedCombinationIds = [...combination.selectedOptionIds].sort();
+                    if (arraysEqual(sortedSelectedIds, sortedCombinationIds)) {
+                        clueToShow = combination.clue;
+                        break;
+                    }
+                }
+            }
+            
+            clueContainer.innerHTML = `<p>${clueToShow}</p>`;
+
+            answerOptionsElement.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.disabled = true);
+            answerOptionsElement.querySelectorAll('.checkbox-label').forEach(lbl => lbl.classList.add('disabled'));
+            submitMultiSelectBtn.disabled = true;
+            nextQuestionBtn.disabled = false;
+            questionAnsweredState = true;
+            undoBtn.disabled = false;
+        });
+
+        undoBtn.addEventListener('click', () => {
+            if (questionAnsweredState) { 
+                loadQuestion(); 
+            }
+        });
+
+        nextQuestionBtn.addEventListener('click', () => {
+            currentQuestionIndex++;
+            questionAnsweredState = false; 
+            if (currentQuestionIndex === questionsData.length) {
+                progressBar.style.width = '100%';
+                showPage('final');
+            } else {
+                loadQuestion();
+            }
+        });
+        
+        restartBtn.addEventListener('click', () => {
+            currentQuestionIndex = 0;
+            questionAnsweredState = false;
+            progressBar.style.width = '0%';
+            initializeHomePage(); 
+            showPage('home');
+        });
+
+        window.onload = () => {
+            initializeHomePage();
+            showPage('home'); // Start on the home page (clue list)
+        };
+    </script>
+</body>
+</html>
